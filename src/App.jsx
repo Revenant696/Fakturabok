@@ -1,110 +1,137 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import './App.css';
 
 function App() {
+  const [showPopup, setShowPopup] = useState(false);
+  const [entries, setEntries] = useState([]);
+  const [isDarkTheme, setIsDarkTheme] = useState(false);
   const [formData, setFormData] = useState({
     creditor: '',
     invoiceNumber: '',
     amount: '',
     date: ''
   });
-  const [currentField, setCurrentField] = useState(0);
-  const fieldsOrder = ['creditor', 'invoiceNumber', 'amount', 'date'];
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const toggleTheme = () => {
+    setIsDarkTheme(!isDarkTheme);
   };
 
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      setCurrentField(prev => (prev < fieldsOrder.length - 1 ? prev + 1 : 0));
-    }
-  };
-
-  const renderField = () => {
-    const fieldName = fieldsOrder[currentField];
-    switch (fieldName) {
-      case 'creditor':
-        return (
-          <div className="form-group field-animation">
-            <label>Creditor</label>
-            <select 
-              name="creditor"
-              value={formData.creditor} 
-              onChange={handleChange}
-              onKeyPress={handleKeyPress}
-              required
-              autoFocus
-            >
-              <option value="">Select Creditor</option>
-              <option value="Supplier A">Supplier A</option>
-              <option value="Supplier B">Supplier B</option>
-            </select>
-          </div>
-        );
-
-      case 'invoiceNumber':
-        return (
-          <div className="form-group field-animation">
-            <label>Invoice Number</label>
-            <input 
-              type="text"
-              name="invoiceNumber"
-              value={formData.invoiceNumber} 
-              onChange={handleChange}
-              onKeyPress={handleKeyPress}
-              placeholder="Invoice Number" 
-              required
-              autoFocus
-            />
-          </div>
-        );
-
-      case 'amount':
-        return (
-          <div className="form-group field-animation">
-            <label>Amount</label>
-            <input
-              type="number"
-              name="amount"
-              value={formData.amount}
-              onChange={handleChange}
-              onKeyPress={handleKeyPress}
-              placeholder="Amount"
-              required
-              autoFocus
-            />
-          </div>
-        );
-
-      case 'date':
-        return (
-          <div className="form-group field-animation">
-            <label>Date</label>
-            <input
-              type="date"
-              name="date"
-              value={formData.date}
-              onChange={handleChange}
-              onKeyPress={handleKeyPress}
-              required
-              autoFocus
-            />
-          </div>
-        );
-
-      default:
-        return null;
-    }
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setEntries([...entries, formData]);
+    setFormData({
+      creditor: '',
+      invoiceNumber: '',
+      amount: '',
+      date: ''
+    });
+    setShowPopup(false);
   };
 
   return (
-    <div className="app-container">
-      <h1>Invoice Entry</h1>
-      <form>
-        {renderField()}
-      </form>
+    <div className={`app-container ${isDarkTheme ? 'dark-theme' : 'light-theme'}`}>
+      <div className="theme-toggle">
+        <label>
+          <input 
+            type="checkbox" 
+            checked={isDarkTheme}
+            onChange={toggleTheme}
+          />
+          Dark Mode
+        </label>
+      </div>
+      
+      <h1>Invoice Management</h1>
+      <button onClick={() => setShowPopup(true)}>Add New Invoice</button>
+
+      {showPopup && (
+        <div className="popup-overlay">
+          <div className="popup-content">
+            <h2>Enter Invoice Details</h2>
+            <form onSubmit={handleSubmit}>
+              <div className="form-group">
+                <label>Creditor</label>
+                <select
+                  name="creditor"
+                  value={formData.creditor}
+                  onChange={(e) => setFormData({...formData, creditor: e.target.value})}
+                  required
+                >
+                  <option value="">Select Creditor</option>
+                  <option value="Supplier A">Supplier A</option>
+                  <option value="Supplier B">Supplier B</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label>Invoice Number</label>
+                <input
+                  type="text"
+                  name="invoiceNumber"
+                  value={formData.invoiceNumber}
+                  onChange={(e) => setFormData({...formData, invoiceNumber: e.target.value})}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Amount</label>
+                <input
+                  type="number"
+                  name="amount"
+                  value={formData.amount}
+                  onChange={(e) => setFormData({...formData, amount: e.target.value})}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Date</label>
+                <input
+                  type="date"
+                  name="date"
+                  value={formData.date}
+                  onChange={(e) => setFormData({...formData, date: e.target.value})}
+                  required
+                />
+              </div>
+
+              <div className="form-actions">
+                <button type="submit">Save</button>
+                <button type="button" onClick={() => setShowPopup(false)}>Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      <div className="entries-list">
+        <h2>Previous Entries</h2>
+        {entries.length > 0 ? (
+          <table>
+            <thead>
+              <tr>
+                <th>Creditor</th>
+                <th>Invoice Number</th>
+                <th>Amount</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {entries.map((entry, index) => (
+                <tr key={index}>
+                  <td>{entry.creditor}</td>
+                  <td>{entry.invoiceNumber}</td>
+                  <td>{entry.amount}</td>
+                  <td>{entry.date}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <p>No entries yet</p>
+        )}
+      </div>
     </div>
   );
 }
